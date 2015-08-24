@@ -11,14 +11,15 @@ def get_uwsgi_stats(agent):
     yield from agent.run_event.wait()
     config = agent.pluginconfig['uwsgi']
     logger.info('starting "get_uwsgi_stats" task for "%s"', config['hostname'])
+    db_config = config['database']
     try:
         logger.debug('try to create the database...')
-        yield from agent.async_create_database('uwsgi')
-        yield from agent.async_create_retention_policy('uwsgi_rp',
-                                                       '365d',
-                                                       '1',
-                                                       'uwsgi')
-        logger.info('database "%s" created successfully', 'uwsgi')
+        yield from agent.async_create_database(db_config['name'])
+        yield from agent.async_create_retention_policy('{}_rp'.format(db_config['name']),
+                                                       db_config['duration'],
+                                                       db_config['replication'],
+                                                       db_config['name'])
+        logger.info('database "%s" created successfully', db_config['name'])
     except:
         pass
     workers_stats = None
@@ -73,5 +74,5 @@ def get_uwsgi_stats(agent):
                 }
             })
             workers_stats[worker['id']] = worker
-        yield from agent.async_push(points, 'uwsgi')
+        yield from agent.async_push(points, db_config['name'])
     logger.info('get_uwsgi_stats terminated')
