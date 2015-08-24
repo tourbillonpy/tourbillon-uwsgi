@@ -12,19 +12,13 @@ def get_uwsgi_stats(agent):
     config = agent.pluginconfig['uwsgi']
     logger.info('starting "get_uwsgi_stats" task for "%s"', config['hostname'])
     db_config = config['database']
-    try:
-        logger.debug('try to create the database...')
-        yield from agent.async_create_database(db_config['name'])
-        yield from agent.async_create_retention_policy('{}_rp'.format(db_config['name']),
-                                                       db_config['duration'],
-                                                       db_config['replication'],
-                                                       db_config['name'])
-        logger.info('database "%s" created successfully', db_config['name'])
-    except:
-        pass
+
+    yield from agent.async_create_database(**db_config)
+
     workers_stats = None
     uwsgi_host = config['hostname']
     uwsgi_port = config['port']
+
     while agent.run_event.is_set():
         yield from asyncio.sleep(config['frequency'])
         logger.debug('open connection to uwsgi stats server')
@@ -39,9 +33,11 @@ def get_uwsgi_stats(agent):
                 workers_stats[worker['id']] = worker
             logger.debug('current statistcs: %s', workers_stats)
             continue
+
         ref_worker = d['workers'][0]
         stored_last_spawn = workers_stats[ref_worker['id']]['last_spawn']
         received_last_spawn = ref_worker['last_spawn']
+
         if stored_last_spawn != received_last_spawn:
             logger.warn('a restart of the uwsgi server "%" has been detected',
                         uwsgi_host)
@@ -49,6 +45,7 @@ def get_uwsgi_stats(agent):
             for worker in d['workers']:
                 workers_stats[worker['id']] = worker
             continue
+
         points = []
         for worker in d['workers']:
             logger.debug('process worker data...')
@@ -75,4 +72,5 @@ def get_uwsgi_stats(agent):
             })
             workers_stats[worker['id']] = worker
         yield from agent.async_push(points, db_config['name'])
+
     logger.info('get_uwsgi_stats terminated')
