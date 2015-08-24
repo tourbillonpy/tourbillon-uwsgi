@@ -9,19 +9,10 @@ logger = logging.getLogger(__name__)
 @asyncio.coroutine
 def get_uwsgi_stats(agent):
     yield from agent.run_event.wait()
-    config = agent.pluginconfig['uwsgi']
+    config = agent.config['uwsgi']
     logger.info('starting "get_uwsgi_stats" task for "%s"', config['hostname'])
     db_config = config['database']
-    try:
-        logger.debug('try to create the database...')
-        yield from agent.async_create_database(db_config['name'])
-        yield from agent.async_create_retention_policy('{}_rp'.format(db_config['name']),
-                                                       db_config['duration'],
-                                                       db_config['replication'],
-                                                       db_config['name'])
-        logger.info('database "%s" created successfully', db_config['name'])
-    except:
-        pass
+    yield from agent.async_create_database(**db_config)
     workers_stats = None
     uwsgi_host = config['hostname']
     uwsgi_port = config['port']
