@@ -35,7 +35,7 @@ def get_uwsgi_stats(agent):
             stored_last_spawn = workers_stats[ref_worker['id']]['last_spawn']
             received_last_spawn = ref_worker['last_spawn']
             if stored_last_spawn != received_last_spawn:
-                logger.warn('a restart of the uwsgi server "%" '
+                logger.warn('a restart of the uwsgi server "%s" '
                             'has been detected',
                             uwsgi_host)
                 workers_stats = dict()
