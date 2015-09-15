@@ -15,7 +15,7 @@ if not PY34_PLUS:
 
 setup(
     name='tourbillon-uwsgi',
-    version='0.1',
+    version='0.2',
     packages=find_packages(exclude=exclude),
     zip_safe=False,
     namespace_packages=['tourbillon'],
