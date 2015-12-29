@@ -16,7 +16,7 @@ if not PY34_PLUS:
 setup(
     name='tourbillon-uwsgi',
     description='A tourbillon plugin for collecting metrics from uWSGI.',
-    version='0.4',
+    version='0.4.1',
     packages=find_packages(exclude=exclude),
     zip_safe=False,
     namespace_packages=['tourbillon'],
